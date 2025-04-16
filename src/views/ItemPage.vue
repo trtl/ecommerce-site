@@ -1,7 +1,7 @@
 <template>
   <div class="container py-5" v-if="item">
     <div class="row justify-content-center">
-      <div class="col-md-6 text-center">
+      <div class="col-md-6 text-center position-relative">
         <!-- Item Image -->
         <img 
           :src="`/images/${item.assets[0]}` || '/placeholder-image.jpg'" 
@@ -9,6 +9,13 @@
           class="img-fluid mb-4" 
           @error="handleImageError"
         />
+        <button 
+          v-if="item.assets?.find(asset => asset.endsWith('.glb'))"
+          class="btn btn-secondary position-absolute top-0 end-0 m-2"
+          @click="show3DModal = true"
+        >
+          <i class="fas fa-cube"></i> View 3D
+        </button>
       </div>
       <div class="col-md-6">
         <!-- Item Details -->
@@ -27,7 +34,7 @@
               :disabled="data.stock <= 0"
               :class="{ 'text-muted': data.stock <= 0 }"
             >
-              {{ size }} - €{{ data.price.toFixed(2) }} 
+              {{ size }} - €{{ data.price.toFixed(2) }}
             </option>
           </select>
         </div>
@@ -60,6 +67,21 @@
         </button>
       </div>
     </div>
+    <!-- 3D Model Modal -->
+    <div v-if="show3DModal" class="modal-overlay" @click.self="show3DModal = false">
+      <div class="modal-content">
+        <button class="close-button" @click="show3DModal = false">&times;</button>
+        <model-viewer
+          :src="get3DModelUrl()"
+          auto-rotate
+          camera-controls
+          shadow-intensity="1"
+          ar
+          ar-modes="webxr scene-viewer quick-look"
+          style="width: 100%; height: 500px;"
+          ></model-viewer>
+      </div>
+    </div>
   </div>
   <div v-else class="container py-5 text-center">
     <p>Loading...</p>
@@ -79,6 +101,13 @@ export default {
     const item = ref(null);
     const quantity = ref(1);
     const selectedSize = ref("");
+    const show3DModal = ref(false);
+
+    const get3DModelUrl = () => {
+      if (!item.value?.assets) return '';
+      const glbFile = item.value.assets.find(asset => asset.endsWith('.glb'));
+      return glbFile ? `/models/${glbFile}` : '';
+    };
 
     const fetchItem = async () => {
       try {
@@ -133,7 +162,9 @@ export default {
       quantity,
       selectedSize,
       addToCart,
-      handleImageError
+      handleImageError,
+      show3DModal,
+      get3DModelUrl
     };
   },
 };
@@ -150,5 +181,43 @@ img {
 option:disabled {
   color: #999;
   font-style: italic;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 800px;
+  position: relative;
+}
+
+.close-button {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  border: none;
+  background: none;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1;
+}
+
+model-viewer {
+  background-color: #f5f5f5;
+  border-radius: 4px;
 }
 </style>
