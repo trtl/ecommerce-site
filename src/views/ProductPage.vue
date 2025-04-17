@@ -1,29 +1,28 @@
 <template>
-  <div class="container mt-4">
-    <h1 class="text-center">Product Page</h1>
-    <p>Fitingio detales</p>
+  <div class="product-page-container">
+    <div class="background-overlay"></div>
+    <div class="container mt-4 content-container">
+      <!-- Display Products -->
+      <div class="row">
+        <div v-for="product in products" :key="product.id" class="col-md-4 mb-3">
+          <div class="card p-3 text-center">
+            <router-link :to="'/product/' + product.id">
+              <img 
+                :src="product.assets?.[0] ? `/images/${product.assets[0]}` : '/images/placeholder-image.jpg'" 
+                alt="Product Image" 
+                class="img-fluid mb-3 product-image" 
+              />
+            </router-link>
 
-    <!-- Display Products -->
-    <div class="row">
-      <div v-for="product in products" :key="product.id" class="col-md-4 mb-3">
-        <div class="card p-3 text-center">
-          <router-link :to="'/product/' + product.id">
-            <img 
-              :src="product.assets?.[0] ? `/images/${product.assets[0]}` : '/images/placeholder-image.jpg'" 
-              alt="Product Image" 
-              class="img-fluid mb-3 product-image" 
-            />
-          </router-link>
-
-          <h5>{{ product.name }}</h5>
-          <p>Category: {{ product.category }}</p>
-          <!-- Display lowest price from sizes -->
-          <p>Starting from: €{{ getLowestPrice(product.sizes) }}</p>
-          <!-- Display available sizes -->
-          <div class="mt-2">
-            <small class="text-muted">Available sizes: 
-              {{ getAvailableSizes(product.sizes) }}
-            </small>
+            <h5>{{ product.name }}</h5>
+            <!-- Display lowest price from sizes -->
+            <p>Starting from: €{{ getLowestPrice(product.sizes) }}</p>
+            <!-- Display available sizes -->
+            <div class="mt-2">
+              <small class="text-muted">Available sizes: 
+                {{ getAvailableSizes(product.sizes) }}
+              </small>
+            </div>
           </div>
         </div>
       </div>
@@ -84,6 +83,31 @@ export default {
 </script>
 
 <style scoped>
+
+.product-page-container {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.background-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('@/assets/fitingiai.jpg');
+  background-size: cover;
+  background-position: center;
+  filter: blur(3px);
+  opacity: 1;
+  z-index: -1;
+}
+
+.content-container {
+  position: relative;
+  z-index: 1;
+}
 .product-image {
   max-height: 150px;
   object-fit: cover;
@@ -93,5 +117,10 @@ export default {
 
 .product-image:hover {
   transform: scale(1.05);
+}
+
+.card {
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(5px);
 }
 </style>

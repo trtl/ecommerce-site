@@ -7,7 +7,6 @@
         <li @click="setActiveTab('products')">Products</li>
         <li @click="setActiveTab('orders')">Orders</li>
         <li @click="setActiveTab('projects')">Projects</li>
-        <li @click="setActiveTab('analytics')">Analytics</li>
       </ul>
     </nav>
 
@@ -183,7 +182,7 @@
 
 <script>
 import { ref, onMounted } from "vue";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 
 export default {
   setup() {
@@ -262,11 +261,17 @@ export default {
 
     const handleFileSelection = (event, type) => {
       const files = event.target.files;
-      for (const file of files) {
-        if (type === "images") {
-          newProduct.value.assets.push(`${file.name}`);
-        } else if (type === "models") {
-          newProduct.value.assets.push(`${file.name}`);
+      if (activeTab.value === 'projects') {
+        for (const file of files) {
+          newProject.value.assets.push(`${file.name}`);
+        }
+      } else {
+        for (const file of files) {
+          if (type === "images") {
+            newProduct.value.assets.push(`${file.name}`);
+          } else if (type === "models") {
+            newProduct.value.assets.push(`${file.name}`);
+          }
         }
       }
     };
@@ -351,8 +356,9 @@ export default {
     const addProject = async () => {
       try {
         const project = {
-          ...newProject.value,
-          date: serverTimestamp(), // Add timestamp
+          title: newProject.value.title,
+          description: newProject.value.description,
+          assets: newProject.value.assets
         };
         const docRef = await addDoc(collection(db, "projects"), project);
         projects.value.push({ id: docRef.id, ...project });

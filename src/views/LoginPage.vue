@@ -1,18 +1,25 @@
 <template>
-  <div class="login-page">
-    <h2>Login</h2>
-    <form @submit.prevent="handleLogin">
-      <div class="mb-3">
-        <label>Email</label>
-        <input v-model="email" type="email" class="form-control" required />
+  <div class="page-container">
+    <div class="background-overlay"></div>
+    <div class="container py-5">
+      <div class="content-card login-container">
+        <h2 class="text-center mb-4">Login</h2>
+        <form @submit.prevent="handleLogin" class="login-form">
+          <div class="mb-3">
+            <label>Email</label>
+            <input v-model="email" type="email" class="form-control form-control-sm" required />
+          </div>
+          <div class="mb-3">
+            <label>Password</label>
+            <input v-model="password" type="password" class="form-control form-control-sm" required />
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Sign In</button>
+        </form>
+        <p class="mt-3 text-center">
+          Don't have an account? <router-link to="/signup">Sign Up</router-link>
+        </p>
       </div>
-      <div class="mb-3">
-        <label>Password</label>
-        <input v-model="password" type="password" class="form-control" required />
-      </div>
-      <button type="submit" class="btn btn-success w-100">Login</button>
-    </form>
-    <p class="mt-3">Don't have an account? <router-link to="/signup">Sign Up</router-link></p>
+    </div>
   </div>
 </template>
 
@@ -60,8 +67,50 @@ export default {
 </script>
 
 <style scoped>
-.login-page {
-  width: 300px;
+
+.login-containerstyle scoped> {
+  max-width: 400px;
   margin: 0 auto;
+}
+
+.btn-primary {
+  background-color: #40E0D0;
+  border-color: #40E0D0;
+  transition: opacity 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #40E0D0;
+  border-color: #40E0D0;
+  opacity: 0.9;
+}
+
+.background-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('@/assets/fitingiai2.jpg');
+  background-size: cover;
+  background-position: center;
+  filter: blur(8px);
+  opacity: 1;
+  z-index: -1;
+}
+
+.login-container {
+  max-width: 350px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.login-form {
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.form-control {
+  height: 38px;
 }
 </style>

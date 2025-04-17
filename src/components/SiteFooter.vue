@@ -1,48 +1,71 @@
-
-
 <template>
-  <footer class="footer bg-dark text-white py-4">
-    <div class="container">
-      <div class="row">
-        <!-- Left Side - Links -->
-        <div class="col-md-4">
-          <ul class="list-unstyled">
-            <li><a href="/about" class="text-white">About</a></li>
-            <li><a href="/privacy-policy" class="text-white">Privacy Policy</a></li>
-            <li><a href="/shipping-returns" class="text-white">Shipping & Returns</a></li>
+  <footer class="site-footer">
+    <div class="container-fluid px-4"> <!-- Changed to container-fluid and added padding -->
+      <div class="row align-items-center py-2">
+        <!-- Quick Links -->
+        <div class="col-auto">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <router-link to="/about" class="nav-link ps-0"> <!-- Added ps-0 to remove left padding -->
+                About Us
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link to="/privacy-policy" class="nav-link ps-0">
+                Privacy Policy
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link to="/shipping-returns" class="nav-link ps-0">
+                Shipping & Returns
+              </router-link>
+            </li>
           </ul>
         </div>
 
-        <div class="col-md-4 text-center">
-          <h5>&copy; 2025 Your Company</h5>
+        <!-- Social Links -->
+        <div class="col-auto ms-auto"> <!-- Added ms-auto to push to the right edge -->
+          <div class="social-links d-flex flex-column align-items-end">
+            <a href="https://www.instagram.com/fitingis.lt/" target="_blank" class="nav-link pe-0">
+              <i class="bi bi-instagram"></i>
+            </a>
+            <a href="https://www.facebook.com/Fitingis.lt/" target="_blank" class="nav-link pe-0">
+              <i class="bi bi-facebook"></i>
+            </a>
+            <a href="#" target="_blank" class="nav-link pe-0">
+              <i class="bi bi-tiktok"></i>
+            </a>
+          </div>
         </div>
-
-        <!-- Right Side - Social Media Links -->
-        <div class="col-md-4 text-end">
-          <ul class="list-unstyled">
-            <li><a href="https://www.instagram.com/fitingis.lt/" target="_blank" class="text-white me-2">Instagram</a></li>
-            <li><a href="https://www.facebook.com/Fitingis.lt/" target="_blank" class="text-white me-2">Facebook</a></li>
-            <li><a href="#" target="_blank" class="text-white">TikTok</a></li>
-          </ul>
-        </div>
-
-        
       </div>
     </div>
   </footer>
 </template>
 
 <style scoped>
-/* Custom Footer Styling */
-.footer {
-  height: 200px; /* Make footer taller */
+.site-footer {
+  background-color: #f8f9fa;
+  width: 100%;
+  border-top: 1px solid #dee2e6;
+  margin-top: auto;
 }
 
-.footer ul {
-  padding: 0;
+.nav-link {
+  color: #333;
+  transition: color 0.2s ease;
+  padding: 0.25rem 0;
+  font-size: 0.9rem;
 }
 
-.footer ul li {
-  margin-bottom: 8px;
+.nav-link:hover {
+  color: #40E0D0;
+}
+
+.social-links {
+  font-size: 1.2rem;
+}
+
+.social-links .nav-link {
+  padding: 0.15rem 0; /* Changed padding to only top/bottom */
 }
 </style>

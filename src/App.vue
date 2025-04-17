@@ -1,9 +1,13 @@
 <template>
   <div class="d-flex flex-column min-vh-100">
-    <SiteHeader />
-    <SiteNavbar />
+    <!-- Sticky Header -->
+    <header class="sticky-top shadow-sm bg-white">
+      <SiteHeader />
+      <SiteNavbar />
+    </header>
 
-    <main class="flex-grow-1">
+    <!-- Main Content -->
+    <main>
       <router-view />
     </main>
     
@@ -26,7 +30,20 @@ export default {
   },
   setup() {
     const userStore = useUserStore();
-    userStore.initializeAuth(); // Initialize authentication state
+    userStore.initializeAuth();
   },
 };
 </script>
+
+<style>
+.sticky-top {
+  z-index: 1020;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+</style>

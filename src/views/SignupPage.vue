@@ -1,36 +1,41 @@
 <template>
-  <div class="signup-page">
-    <h2>Sign Up</h2>
-    <form @submit.prevent="handleSignup">
-      <div class="mb-3">
-        <label for="firstName">First Name</label>
-        <input v-model="firstName" type="text" id="firstName" class="form-control" required />
+  <div class="page-container">
+    <div class="background-overlay"></div>
+    <div class="container py-5">
+      <div class="content-card signup-container">
+        <h2 class="text-center mb-4">Sign Up</h2>
+        <form @submit.prevent="handleSignup" class="signup-form">
+          <div class="mb-3">
+            <label for="firstName">First Name</label>
+            <input v-model="firstName" type="text" id="firstName" class="form-control form-control-sm" required />
+          </div>
+          <div class="mb-3">
+            <label for="lastName">Last Name</label>
+            <input v-model="lastName" type="text" id="lastName" class="form-control form-control-sm" required />
+          </div>
+          <div class="mb-3">
+            <label for="email">Email</label>
+            <input v-model="email" type="email" id="email" class="form-control form-control-sm" required />
+          </div>
+          <div class="mb-3">
+            <label for="phone">Phone</label>
+            <input v-model="phone" type="tel" id="phone" class="form-control form-control-sm" />
+          </div>
+          <div class="mb-3">
+            <label for="password">Password</label>
+            <input v-model="password" type="password" id="password" class="form-control form-control-sm" required />
+          </div>
+          <div class="mb-3">
+            <label for="confirmPassword">Confirm Password</label>
+            <input v-model="confirmPassword" type="password" id="confirmPassword" class="form-control form-control-sm" required />
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+        </form>
+        <p class="mt-3 text-center">
+          Already have an account? <router-link to="/login">Sign In</router-link>
+        </p>
       </div>
-      <div class="mb-3">
-        <label for="lastName">Last Name</label>
-        <input v-model="lastName" type="text" id="lastName" class="form-control" required />
-      </div>
-      <div class="mb-3">
-        <label for="email">Email</label>
-        <input v-model="email" type="email" id="email" class="form-control" required />
-      </div>
-      <div class="mb-3">
-        <label for="phone">Phone</label>
-        <input v-model="phone" type="tel" id="phone" class="form-control" />
-      </div>
-      <div class="mb-3">
-        <label for="password">Password</label>
-        <input v-model="password" type="password" id="password" class="form-control" required />
-      </div>
-      <div class="mb-3">
-        <label for="confirmPassword">Confirm Password</label>
-        <input v-model="confirmPassword" type="password" id="confirmPassword" class="form-control" required />
-      </div>
-      <button type="submit" class="btn btn-success w-100">Sign Up</button>
-    </form>
-    <p class="mt-3">
-      Already have an account? <router-link to="/login">Login</router-link>
-    </p>
+    </div>
   </div>
 </template>
 
@@ -106,25 +111,46 @@ export default {
 </script>
 
 <style scoped>
-.signup-page {
-  width: 300px;
+
+.signup-container {
+  max-width: 400px;
   margin: 0 auto;
-  padding: 20px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
+  padding: 2rem;
 }
 
-.signup-page form {
-  display: flex;
-  flex-direction: column;
+.signup-form {
+  max-width: 300px;
+  margin: 0 auto;
 }
 
-.signup-page .mb-3 {
-  margin-bottom: 1rem;
+.form-control {
+  height: 38px;
 }
 
-.signup-page h2 {
-  text-align: center;
-  margin-bottom: 20px;
+.btn-primary {
+  background-color: #40E0D0;
+  border-color: #40E0D0;
+  transition: opacity 0.2s ease;
 }
+
+.btn-primary:hover {
+  background-color: #40E0D0;
+  border-color: #40E0D0;
+  opacity: 0.9;
+}
+
+.background-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('@/assets/fitingiai2.jpg');
+  background-size: cover;
+  background-position: center;
+  filter: blur(8px);
+  opacity: 1;
+  z-index: -1;
+}
+
 </style>

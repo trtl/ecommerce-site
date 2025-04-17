@@ -3,8 +3,8 @@
     <!-- Full-Screen Background Image -->
     <div class="hero-image">
       <div class="hero-text">
-        <h1>Welcome to Our Website</h1>
-        <p>Discover our latest projects below</p>
+        <h1>Welcome to the</h1>
+        <p>Biggest assortment of metal joint supplies in town</p>
       </div>
     </div>
 
@@ -14,11 +14,15 @@
       <div class="row">
         <div class="col-md-4" v-for="project in latestProjects" :key="project.id">
           <div class="card mb-4">
-            <img :src="project.image" class="card-img-top" alt="Project Image" />
+            <img 
+              :src="getImageUrl(project.assets?.[0])"
+              class="card-img-top" 
+              :alt="project.title"
+              @error="(e) => handleImageError(e)"
+            />
             <div class="card-body">
               <h5 class="card-title">{{ project.title }}</h5>
               <p class="card-text">{{ project.description }}</p>
-              <p class="text-muted">Added on: {{ project.dateAdded }}</p>
             </div>
           </div>
         </div>
@@ -28,33 +32,47 @@
 </template>
 
 <script>
+import { ref, onMounted } from 'vue';
+import { getFirestore, collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+
 export default {
   name: "HomePage",
-  data() {
+  setup() {
+    const latestProjects = ref([]);
+    const db = getFirestore();
+
+    const fetchProjects = async () => {
+      try {
+        const projectsRef = collection(db, 'projects');
+        const q = query(projectsRef, orderBy('title', 'desc'), limit(3));
+        const querySnapshot = await getDocs(q);
+        
+        latestProjects.value = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+      }
+    };
+
+    const getImageUrl = (imagePath) => {
+      if (!imagePath) return '/images/pr1.png';
+      return `/images/${imagePath}`;
+    };
+
+    const handleImageError = (e) => {
+      e.target.src = '/images/pr1.png';
+    };
+
+    onMounted(() => {
+      fetchProjects();
+    });
+
     return {
-      latestProjects: [
-        {
-          id: 1,
-          title: "Project One",
-          description: "This is a short description of project one.",
-          image: "https://via.placeholder.com/300x200",
-          dateAdded: "2025-04-01",
-        },
-        {
-          id: 2,
-          title: "Project Two",
-          description: "This is a short description of project two.",
-          image: "https://via.placeholder.com/300x200",
-          dateAdded: "2025-03-28",
-        },
-        {
-          id: 3,
-          title: "Project Three",
-          description: "This is a short description of project three.",
-          image: "https://via.placeholder.com/300x200",
-          dateAdded: "2025-03-25",
-        },
-      ],
+      latestProjects,
+      handleImageError,
+      getImageUrl
     };
   },
 };
@@ -96,5 +114,28 @@ export default {
 .card-img-top {
   height: 200px;
   object-fit: cover;
+}
+
+.card {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card-img-top {
+  height: 200px;
+  object-fit: cover;
+}
+
+.card-title {
+  color: #333;
+  font-weight: 500;
+}
+
+.card-text {
+  color: #666;
 }
 </style>
