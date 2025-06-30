@@ -36,22 +36,20 @@ const router = createRouter({
   routes
 });
 
-// Add a global navigation guard
+// navigation guard
 router.beforeEach(async (to, from, next) => {
-  const userStore = useUserStore(); // Access the user store
+  const userStore = useUserStore();
 
-  // Wait for the user to be initialized
   if (!userStore.isInitialized) {
     await userStore.initializeAuth();
   }
 
-  // Check if the route requires authentication
   if (to.meta.requiresAuth && !userStore.isLoggedIn) {
-    next({ name: "Login" }); // Redirect to login if not authenticated
+    next({ name: "Login" });
   } else if (to.meta.isAdmin && userStore.userInfo.role !== "admin") {
-    next({ path: "/" }); // Redirect to home if not an admin
+    next({ path: "/" });
   } else {
-    next(); // Allow navigation
+    next(); 
   }
 });
 

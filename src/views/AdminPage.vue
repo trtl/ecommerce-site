@@ -1,20 +1,36 @@
 <template>
-  <div class="admin-dashboard">
-    <h1>Admin Dashboard</h1>
+   <div class="page-container">
+    <div class="background-overlay"></div>
+    <div class="container py-5">
+      <div class="content-card mb-4">
+        <h1 class="text-center mb-4">Admin Dashboard</h1>
+        
+        <!-- Updated Navigation -->
+        <ul class="nav nav-tabs">
+          <li class="nav-item">
+            <a :class="{'nav-link': true, active: activeTab === 'products'}" 
+               @click="setActiveTab('products')">
+              <i class="bi bi-box me-2"></i>Products
+            </a>
+          </li>
+          <li class="nav-item">
+            <a :class="{'nav-link': true, active: activeTab === 'orders'}"
+               @click="setActiveTab('orders')">
+              <i class="bi bi-cart me-2"></i>Orders
+            </a>
+          </li>
+          <li class="nav-item">
+            <a :class="{'nav-link': true, active: activeTab === 'projects'}"
+               @click="setActiveTab('projects')">
+              <i class="bi bi-folder me-2"></i>Projects
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
 
-    <nav>
-      <ul>
-        <li @click="setActiveTab('products')">Products</li>
-        <li @click="setActiveTab('orders')">Orders</li>
-        <li @click="setActiveTab('projects')">Projects</li>
-      </ul>
-    </nav>
-
-    <!-- Products Tab -->
-    <div v-if="activeTab === 'products'">
-      <h2>Product Management</h2>
-
-      <!-- Add Product Form -->
+    <!-- Products tab -->
+    <div v-if="activeTab === 'products'" class="content-card">
       <form @submit.prevent="addProduct" class="mb-4">
         <div class="mb-3">
           <label class="form-label">Name</label>
@@ -26,7 +42,12 @@
         </div>
         <div class="mb-3">
           <label class="form-label">Category</label>
-          <input type="text" v-model="newProduct.category" class="form-control" required />
+          <select v-model="newProduct.category" class="form-control" required>
+            <option value="">Select Category</option>
+            <option value="cinkuoti">Cinkuoti</option>
+            <option value="plieniniai">Plieniniai</option>
+            <option value="komplektai">Komplektai</option>
+          </select>
         </div>
         <div class="mb-3">
           <label class="form-label">Sizes, Stock and Prices</label>
@@ -52,7 +73,6 @@
             />
             <button type="button" @click="addSize" class="btn btn-secondary">Add</button>
           </div>
-          <!-- Display added sizes -->
           <div v-if="Object.keys(newProduct.sizes).length > 0" class="mt-2">
             <h6>Added Sizes:</h6>
             <ul class="list-unstyled">
@@ -74,7 +94,6 @@
         <button type="submit" class="btn btn-primary">Add Product</button>
       </form>
 
-      <!-- Product List -->
       <ul class="list-group">
         <li v-for="product in products" :key="product.id" class="list-group-item d-flex justify-content-between align-items-center">
           <div>
@@ -92,7 +111,6 @@
                 </li>
               </ul>
             </div>
-
             <div v-if="product.assets?.length">
               <h6>Assets:</h6>
               <ul>
@@ -106,11 +124,8 @@
         </li>
       </ul>
     </div>
-    <!-- Orders Tab -->
-    <div v-if="activeTab === 'orders'">
-      <h2>Order Management</h2>
-
-      <!-- Order List -->
+    <!-- Orders tab -->
+    <div v-if="activeTab === 'orders'" class="content-card">
       <ul class="list-group">
         <li
           v-for="order in orders"
@@ -129,10 +144,11 @@
               </select>
             </p>
             <p>Total: €{{ order.total.toFixed(2) }}</p>
-            <p>Date: {{ order.date?.toDate().toLocaleString() }}</p>
-            <ul>
-              <li v-for="item in order.items" :key="item.productId">
-                Product ID: {{ item.productId }}, Quantity: {{ item.quantity }}
+            <p>Date:{{ new Date('2025-06-09').toLocaleDateString() }}</p>
+            <ul class="list-unstyled">
+              <li v-for="item in order.items" :key="item.productId" class="mb-2">
+                <span class="fw-bold">{{ productNames[item.productId] || 'Loading...' }}</span>
+                <span class="text-muted"> - Quantity: {{ item.quantity }}</span>
               </li>
             </ul>
           </div>
@@ -140,10 +156,8 @@
         </li>
       </ul>
     </div>
-    <div v-if="activeTab === 'projects'">
-      <h2>Project Management</h2>
-
-      <!-- Add Project Form -->
+    <!-- Projects tab -->
+    <div v-if="activeTab === 'projects'" class="content-card">
       <form @submit.prevent="addProject" class="mb-4">
         <div class="mb-3">
           <label class="form-label">Title</label>
@@ -174,6 +188,12 @@
               </li>
             </ul>
           </div>
+          <button 
+            @click="deleteProject(project.id)" 
+            class="btn btn-danger btn-sm"
+          >
+            Delete
+          </button>
         </li>
       </ul>
     </div>
@@ -182,14 +202,13 @@
 
 <script>
 import { ref, onMounted } from "vue";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, getDoc } from "firebase/firestore";
 
 export default {
   setup() {
     const activeTab = ref("products");
     const db = getFirestore();
-    
-
+    const productNames = ref({});
     const products = ref([]);  
     const orders = ref([]);
     const newSize = ref("");
@@ -211,8 +230,6 @@ export default {
       date: null,
     });
 
-    // Fetch products from Firestore
-    // Fetch a single product by its productId
     const fetchProducts = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "products"));
@@ -221,14 +238,27 @@ export default {
             id: doc.id,
             ...doc.data(),
           }))
-          .filter((product) => product.id !== "productId"); // Exclude placeholder
+          .filter((product) => product.id !== "productId");
       } catch (error) {
         console.error("Error fetching products:", error);
       }
     };
 
+    const fetchProductNames = async (orderItems) => {
+      const uniqueProductIds = [...new Set(orderItems.map(item => item.productId))];
+      
+      for (const productId of uniqueProductIds) {
+        try {
+          const productDoc = await getDoc(doc(db, "products", productId));
+          if (productDoc.exists()) {
+            productNames.value[productId] = productDoc.data().name;
+          }
+        } catch (error) {
+          console.error(`Error fetching product name for ID ${productId}:`, error);
+        }
+      }
+    };
 
-    // Add a new product to Firestore
     const addProduct = async () => {
       try {
         const product = { ...newProduct.value };
@@ -242,7 +272,6 @@ export default {
       }
     };
 
-    // Update the addSize method
     const addSize = () => {
       if (newSize.value && newSizeStock.value >= 0 && newSizePrice.value >= 0) {
         newProduct.value.sizes = {
@@ -276,7 +305,6 @@ export default {
       }
     };
 
-    // Delete a product from Firestore
     const deleteProduct = async (id) => {
       try {
         await deleteDoc(doc(db, "products", id));
@@ -288,7 +316,6 @@ export default {
       }
     };
 
-    // Reset the new product form
     const resetNewProduct = () => {
       newProduct.value = {
         name: "",
@@ -299,22 +326,26 @@ export default {
       };
     };
 
-
-    // Fetch all orders from Firestore
     const fetchOrders = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "orders"));
-        orders.value = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-        .filter((order) => order.id !== "orderId"); // Exclude placeholder
+        const ordersData = querySnapshot.docs
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }))
+          .filter((order) => order.id !== "orderId");
+        
+        for (const order of ordersData) {
+          await fetchProductNames(order.items);
+        }
+        
+        orders.value = ordersData;
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
     };
 
-    // Delete an order from Firestore
     const deleteOrder = async (id) => {
       try {
         await deleteDoc(doc(db, "orders", id));
@@ -326,7 +357,6 @@ export default {
       }
     };
 
-    // Update the status of an order in Firestore
     const updateOrderStatus = async (id, status) => {
       try {
         const orderRef = doc(db, "orders", id);
@@ -338,7 +368,6 @@ export default {
       }
     };
 
-    // Fetch all projects from Firestore
     const fetchProjects = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "projects"));
@@ -346,13 +375,12 @@ export default {
           id: doc.id,
           ...doc.data(),
         }))
-        .filter((project) => project.id !== "projectId"); // Exclude placeholder");
+        .filter((project) => project.id !== "projectId"); // filter placeholder document
       } catch (error) {
         console.error("Error fetching projects:", error);
       }
     };
 
-    // Add a new project to Firestore
     const addProject = async () => {
       try {
         const project = {
@@ -370,7 +398,17 @@ export default {
       }
     };
 
-    // Reset the new project form
+    const deleteProject = async (id) => {
+      try {
+        await deleteDoc(doc(db, "projects", id));
+        projects.value = projects.value.filter((project) => project.id !== id);
+        alert("Project deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting project:", error);
+        alert("Failed to delete project.");
+      }
+    };
+
     const resetNewProject = () => {
       newProject.value = {
         title: "",
@@ -380,15 +418,8 @@ export default {
       };
     };
 
-    // Fetch projects on component mount
     onMounted(fetchProjects);
-
-    // Fetch orders on component mount
     onMounted(fetchOrders);
-
-
-
-    // Fetch products on component mount
     onMounted(fetchProducts);
 
     const setActiveTab = (tab) => {
@@ -413,28 +444,121 @@ export default {
       newSizeStock,
       addSize,
       newSizePrice,
+      productNames,
+      deleteProject,
     };
   },
 };
 </script>
 
 <style scoped>
-.admin-dashboard {
-  padding: 20px;
+.page-container {
+  position: relative;
+  min-height: 100vh;
 }
-nav ul {
-  display: flex;
-  gap: 15px;
-  list-style: none;
-  padding: 0;
+
+.background-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('@/assets/fitingiai2.jpg');
+  background-size: cover;
+  background-position: center;
+  filter: blur(8px);
+  opacity: 0.2;
+  z-index: -1;
 }
-nav ul li {
+
+.content-card {
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(5px);
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.nav-tabs {
+  border-bottom: none;
+}
+
+.nav-tabs .nav-link {
   cursor: pointer;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  color: #666;
+  border: none;
+  padding: 0.5rem 1rem;
+  transition: color 0.2s ease;
 }
-nav ul li:hover {
-  background-color: #f0f0f0;
+
+.nav-tabs .nav-link.active {
+  color: #40E0D0;
+  border-bottom: 2px solid #40E0D0;
+  background: none;
 }
+
+.nav-tabs .nav-link:hover {
+  color: #40E0D0;
+}
+
+.btn-primary {
+  background-color: #40E0D0;
+  border-color: #40E0D0;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #3bcdc0;
+  border-color: #3bcdc0;
+}
+
+.form-control:focus {
+  border-color: #40E0D0;
+  box-shadow: 0 0 0 0.2rem rgba(64, 224, 208, 0.25);
+}
+
+.list-group-item {
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0,0,0,0.1);
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+}
+
+.badge {
+  padding: 0.5em 1em;
+  font-weight: 500;
+}
+
+.form-label {
+  color: #555;
+  font-weight: 500;
+}
+
+.form-select:focus {
+  border-color: #40E0D0;
+  box-shadow: 0 0 0 0.2rem rgba(64, 224, 208, 0.25);
+}
+
+.card {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 1rem;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
 </style>

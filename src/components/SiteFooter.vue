@@ -1,40 +1,27 @@
 <template>
   <footer class="site-footer">
-    <div class="container-fluid px-4"> <!-- Changed to container-fluid and added padding -->
+    <div class="container-fluid px-4">
       <div class="row align-items-center py-2">
-        <!-- Quick Links -->
+        <!-- Nav links -->
         <div class="col-auto">
           <ul class="nav flex-column">
             <li class="nav-item">
-              <router-link to="/about" class="nav-link ps-0"> <!-- Added ps-0 to remove left padding -->
-                About Us
-              </router-link>
+              <router-link to="/about" class="nav-link ps-0">About Us</router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/privacy-policy" class="nav-link ps-0">
-                Privacy Policy
-              </router-link>
+              <router-link to="/privacy-policy" class="nav-link ps-0">Privacy Policy</router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/shipping-returns" class="nav-link ps-0">
-                Shipping & Returns
-              </router-link>
+              <router-link to="/shipping-returns" class="nav-link ps-0">Shipping & Returns</router-link>
             </li>
           </ul>
         </div>
-
-        <!-- Social Links -->
-        <div class="col-auto ms-auto"> <!-- Added ms-auto to push to the right edge -->
+        <!-- Social links -->
+        <div class="col-auto ms-auto">
           <div class="social-links d-flex flex-column align-items-end">
-            <a href="https://www.instagram.com/fitingis.lt/" target="_blank" class="nav-link pe-0">
-              <i class="bi bi-instagram"></i>
-            </a>
-            <a href="https://www.facebook.com/Fitingis.lt/" target="_blank" class="nav-link pe-0">
-              <i class="bi bi-facebook"></i>
-            </a>
-            <a href="#" target="_blank" class="nav-link pe-0">
-              <i class="bi bi-tiktok"></i>
-            </a>
+            <a href="https://www.instagram.com/fitingis.lt/" target="_blank" class="nav-link pe-0"><i class="bi bi-instagram"></i></a>
+            <a href="https://www.facebook.com/Fitingis.lt/" target="_blank" class="nav-link pe-0"><i class="bi bi-facebook"></i></a>
+            <a href="#" target="_blank" class="nav-link pe-0"><i class="bi bi-tiktok"></i></a>
           </div>
         </div>
       </div>
@@ -66,6 +53,6 @@
 }
 
 .social-links .nav-link {
-  padding: 0.15rem 0; /* Changed padding to only top/bottom */
+  padding: 0.15rem 0;
 }
 </style>

@@ -27,20 +27,19 @@ export const useUserStore = defineStore("user", {
             this.userInfo.uid = currentUser.uid;
             this.userInfo.email = currentUser.email;
 
-            // Fetch user data
             const userDoc = await getDoc(doc(db, "users", currentUser.uid));
             if (userDoc.exists()) {
               const userData = userDoc.data();
               this.userInfo.firstName = userData.firstName || "";
               this.userInfo.lastName = userData.lastName || "";
               this.userInfo.phone = userData.phone || "";
-              this.userInfo.role = userData.role || ""; // Fetch role 
+              this.userInfo.role = userData.role || ""; 
             }
           } else {
             this.resetUserState();
           }
-          this.isInitialized = true; // Mark as initialized
-          resolve(); // Resolve the promise
+          this.isInitialized = true; 
+          resolve();
         });
       });
     },
@@ -56,18 +55,17 @@ export const useUserStore = defineStore("user", {
         this.isLoggedIn = true;
         this.userInfo.email = user.email;
 
-        // Fetch user data from Firestore
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
           this.userInfo.firstName = userData.firstName || "";
           this.userInfo.lastName = userData.lastName || "";
           this.userInfo.phone = userData.phone || "";
-          this.userInfo.role = userData.role || ""; // Fetch role from Firestore
+          this.userInfo.role = userData.role || "";
         }
       } catch (error) {
         console.error("Login error:", error.message);
-        throw error; // Re-throw the error to handle it in the component
+        throw error;
       }
     },
 
@@ -78,7 +76,7 @@ export const useUserStore = defineStore("user", {
         this.resetUserState();
       } catch (error) {
         console.error("Logout error:", error.message);
-        throw error; // Re-throw the error to handle it in the component
+        throw error;
       }
     },
 

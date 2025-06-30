@@ -3,19 +3,13 @@
     <div class="container">
       <ul class="nav justify-content-center">
         <li class="nav-item">
-          <router-link to="/products" class="nav-link">
-            Products
-          </router-link>
+          <router-link to="/products" class="nav-link">Products</router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/" class="nav-link">
-            Home
-          </router-link>
+          <router-link to="/" class="nav-link">Home</router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/contacts" class="nav-link">
-            Contact
-          </router-link>
+          <router-link to="/contacts" class="nav-link">Contact</router-link>
         </li>
       </ul>
     </div>
@@ -25,17 +19,17 @@
 <style scoped>
 .site-nav {
   background-color: #f8f9fa;
-  padding: 0.25rem 0;  /* Reduced from 0.5rem */
-  height: 40px;        /* Added fixed height */
+  padding: 0.25rem 0; 
+  height: 40px;
   display: flex;
   align-items: center;
 }
 
 .nav-link {
   color: #333;
-  padding: 0.25rem 1.5rem;  /* Reduced top/bottom padding from 0.5rem */
+  padding: 0.25rem 1.5rem;
   transition: color 0.2s ease;
-  line-height: 1;    /* Added to reduce line height */
+  line-height: 1;
 }
 
 .nav-link:hover,

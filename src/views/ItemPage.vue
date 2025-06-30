@@ -3,7 +3,6 @@
     <div class="background-overlay"></div>
     <div class="container py-5" v-if="item">
       <div class="content-card">
-        <!-- Centered Image and Details Section -->
         <div class="text-center mb-4">
           <div class="position-relative d-inline-block">
             <img 
@@ -20,18 +19,14 @@
               <i class="bi bi-badge-3d"></i>
             </button>
           </div>
-          
-          <!-- Product Name and Price -->
           <h1 class="mb-2">{{ item.name }}</h1>
           <h3 class="text-success mb-4" v-if="selectedSize">
             €{{ item.sizes[selectedSize]?.price.toFixed(2) }}
           </h3>
         </div>
-
-        <!-- Size and Quantity Section -->
+        <!-- Product details -->
         <div class="row justify-content-center">
           <div class="col-md-6">
-            <!-- Size Selector -->
             <div class="mb-3">
               <label for="size" class="form-label">Size</label>
               <select v-model="selectedSize" id="size" class="form-control">
@@ -47,8 +42,6 @@
                 </option>
               </select>
             </div>
-
-            <!-- Quantity Selector -->
             <div class="mb-4">
               <label for="quantity" class="form-label">Quantity</label>
               <input
@@ -60,38 +53,43 @@
                 min="1"
               />
             </div>
-
-            <!-- Add to Cart Button -->
             <button 
               class="btn btn-primary w-100 mb-4" 
               @click="addToCart"
               :disabled="!selectedSize || !item.sizes[selectedSize]?.stock"
-            >
-              Add to Cart
-            </button>
+            >Add to Cart</button>
           </div>
         </div>
-
-        <!-- Description Section -->
         <hr class="my-4">
         <div class="product-description">
           <h4 class="mb-3">Description</h4>
           <p>{{ item.description }}</p>
         </div>
 
-        <!-- 3D Model Modal -->
+        <!-- 3D viewer -->
         <div v-if="show3DModal" class="modal-overlay" @click.self="show3DModal = false">
           <div class="modal-content">
             <button class="close-button" @click="show3DModal = false">&times;</button>
-            <model-viewer
-              :src="get3DModelUrl()"
-              auto-rotate
-              camera-controls
-              shadow-intensity="1"
-              ar
-              ar-modes="webxr scene-viewer quick-look"
-              style="width: 100%; height: 500px;"
+            <div class="model-viewer-container">
+              <model-viewer
+                :src="get3DModelUrl()"
+                auto-rotate
+                camera-controls
+                shadow-intensity="1"
+                ar
+                ar-modes="webxr scene-viewer quick-look"
+                style="width: 100%; height: 500px;"
               ></model-viewer>
+              <div class="qr-code-container desktop-only">
+                <QRCode
+                  :value="arUrl"
+                  :size="80"
+                  level="H"
+                  render-as="svg"
+                />
+                <p class="qr-code-text">Scan for AR</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -101,10 +99,14 @@
 
 <script>
 import { useCartStore } from "@/store/cart";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import QRCode from 'qrcode.vue';
 
 export default {
+  components:{
+    QRCode
+  },
   props: ["id"],
   setup(props) {
     const cartStore = useCartStore();
@@ -119,6 +121,15 @@ export default {
       const glbFile = item.value.assets.find(asset => asset.endsWith('.glb'));
       return glbFile ? `/models/${glbFile}` : '';
     };
+
+    const arUrl = computed(() => {
+      if (!item.value?.assets) return '';
+      const glbFile = item.value.assets.find(asset => asset.endsWith('.glb'));
+      if (!glbFile) return '';
+       const modelUrl = `http://192.168.31.22:8080/models/${glbFile}`;
+      return `https://arvr.google.com/scene-viewer/1.0?file=${modelUrl}&mode=ar_only;`;
+    });
+    
 
     const fetchItem = async () => {
       try {
@@ -175,7 +186,8 @@ export default {
       addToCart,
       handleImageError,
       show3DModal,
-      get3DModelUrl
+      get3DModelUrl,
+      arUrl,
     };
   },
 };
@@ -240,6 +252,7 @@ option:disabled {
 .modal-content {
   background-color: white;
   padding: 20px;
+  padding-bottom: 100px;
   border-radius: 8px;
   width: 90%;
   max-width: 800px;
@@ -257,9 +270,10 @@ option:disabled {
   z-index: 1;
 }
 
-model-viewer {
-  background-color: #f5f5f5;
-  border-radius: 4px;
+.model-viewer-container {
+  position: relative;
+  width: 100%;
+  height: 500px;
 }
 
 .background-overlay {
@@ -274,5 +288,41 @@ model-viewer {
   filter: blur(8px);
   opacity: 1;
   z-index: -1;
+}
+
+.qr-code-container {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+}
+
+.qr-code-text {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #666;
+}
+
+.modal-content {
+  min-height: 600px;
+  position: relative;
+}
+
+.desktop-only {
+  display: none;
+}
+
+
+@media screen and (min-width: 1024px) {
+  .desktop-only {
+    display: flex;
+  }
 }
 </style>

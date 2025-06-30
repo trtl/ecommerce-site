@@ -18,11 +18,11 @@
               :src="getImageUrl(project.assets?.[0])"
               class="card-img-top" 
               :alt="project.title"
-              @error="(e) => handleImageError(e)"
+              @error="handleImageError"
             />
             <div class="card-body">
               <h5 class="card-title">{{ project.title }}</h5>
-              <p class="card-text">{{ project.description }}</p>
+              <p class="card-text">{{ truncateDescription(project.description) }}</p>
             </div>
           </div>
         </div>
@@ -33,7 +33,7 @@
 
 <script>
 import { ref, onMounted } from 'vue';
-import { getFirestore, collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, query, orderBy, limit } from '@firebase/firestore';
 
 export default {
   name: "HomePage",
@@ -56,13 +56,27 @@ export default {
       }
     };
 
+    const truncateDescription = (text) => {
+      if (!text) return '';
+      const words = text.split(' ');
+      const truncated = words.slice(0, 30).join(' ');
+      return truncated + (words.length > 30 ? '...' : '');
+    };
+
     const getImageUrl = (imagePath) => {
       if (!imagePath) return '/images/pr1.png';
-      return `/images/${imagePath}`;
+      try {
+        return new URL(`/images/${imagePath}`, window.location.origin).href;
+      } catch {
+        return '/images/pr1.png';
+      }
     };
 
     const handleImageError = (e) => {
-      e.target.src = '/images/pr1.png';
+      const fallbackImage = '/images/pr1.png';
+      if (e.target.src !== fallbackImage) {
+        e.target.src = fallbackImage;
+      }
     };
 
     onMounted(() => {
@@ -71,15 +85,15 @@ export default {
 
     return {
       latestProjects,
+      getImageUrl,
       handleImageError,
-      getImageUrl
+       truncateDescription,
     };
-  },
+  }
 };
 </script>
 
 <style scoped>
-/* Full-Screen Background Image */
 .hero-image {
   background-image: url("@/assets/fitingiai.jpg");
   height: 100vh;
@@ -106,21 +120,6 @@ export default {
   font-size: 1.5rem;
 }
 
-/* Latest Projects Section */
-.card {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.card-img-top {
-  height: 200px;
-  object-fit: cover;
-}
-
-.card {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease;
-}
-
 .card:hover {
   transform: translateY(-5px);
 }
@@ -137,5 +136,32 @@ export default {
 
 .card-text {
   color: #666;
+}
+
+.card {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+  height: 400px;
+  overflow: hidden;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  height: 200px;
+  padding: 1.25rem;
+}
+
+.card-text {
+  overflow: hidden;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.card-img-top {
+  height: 200px;
+  object-fit: cover;
+  width: 100%;
 }
 </style>

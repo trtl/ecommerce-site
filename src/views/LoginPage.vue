@@ -15,9 +15,7 @@
           </div>
           <button type="submit" class="btn btn-primary w-100">Sign In</button>
         </form>
-        <p class="mt-3 text-center">
-          Don't have an account? <router-link to="/signup">Sign Up</router-link>
-        </p>
+        <p class="mt-3 text-center">Don't have an account? <router-link to="/signup">Sign Up</router-link></p>
       </div>
     </div>
   </div>
@@ -25,10 +23,9 @@
 
 <script>
 import { ref } from "vue";
-import { signInWithEmailAndPassword } from "@/firebase/firebaseConfig.js";
-import { auth } from "@/firebase/firebaseConfig.js"; // Import Firebase authentication
+import { signInWithEmailAndPassword, auth  } from "@/firebase/firebaseConfig";
 import { useRouter } from "vue-router";
-import { useUserStore } from "@/store/user"; // Assuming you have a user store to manage user state
+import { useUserStore } from "@/store/user";
 
 export default {
   setup() {
@@ -36,23 +33,19 @@ export default {
     const password = ref("");
     const errorMessage = ref("");
     const router = useRouter();
-    const userStore = useUserStore(); // Assuming you have a user store to manage user state
+    const userStore = useUserStore();
 
     const handleLogin = async () => {
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
         console.log("User logged in:", userCredential.user);
 
-        // Reinitialize the user store to fetch the new user's data
         await userStore.initializeAuth();
+        router.push("/profile");
 
-        // Redirect to the intended route or default to /profile
-        const redirectTo = router.currentRoute.value.query.redirect || "/profile";
-        router.push(redirectTo);
-        //router.push("/profile"); // Uncomment this if you have a Dashboard page
       } catch (error) {
         console.error("Error logging in:", error.message);
-        errorMessage.value = error.message; // Display error message
+        errorMessage.value = error.message;
       }
     };
 

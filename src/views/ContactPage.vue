@@ -6,7 +6,6 @@
         <h3 class="mb-4 text-center">Contact Us</h3>
         <form @submit.prevent="sendMessage">
           <div class="row">
-            <!-- Left Column -->
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="name" class="form-label">Name</label>
@@ -21,7 +20,6 @@
                 <input type="tel" id="phone" v-model="contactInfo.phone" class="form-control" required />
               </div>
             </div>
-            <!-- Right Column -->
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="topic" class="form-label">Topic</label>
@@ -36,8 +34,7 @@
           <button type="submit" class="btn custom-btn w-100">Send Message</button>
         </form>
       </div>
-
-      <!-- Contact Information Section -->
+      <!-- Contact info -->
       <div class="row mt-5 contact-info">
         <div class="col-md-4 text-center">
           <div class="info-card">
@@ -65,6 +62,11 @@
         </div>
       </div>
     </div>
+    <div class="container mt-5 mb-5">
+      <div class="map-container">
+        <div id="google-map" ref="mapRef"></div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -87,8 +89,7 @@ export default {
   methods: {
     async sendMessage() {
       try {
-        // Replace '/api/send-email' with your backend email endpoint
-        const response = await axios.post("/api/send-email", this.contactInfo);
+        const response = await axios.post("/test", this.contactInfo);
         if (response.status === 200) {
           alert("Your message has been sent successfully!");
           this.contactInfo = {

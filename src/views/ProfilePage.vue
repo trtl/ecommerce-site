@@ -5,7 +5,7 @@
   <div class="page-container">
     <div class="background-overlay"></div>
     <div class="container py-5">
-      <!-- Tabs -->
+   
       <div class="content-card mb-4">
         <ul class="nav nav-tabs">
           <li class="nav-item" @click="activeTab = 'profile'">
@@ -26,7 +26,7 @@
         </ul>
       </div>
 
-      <!-- Profile Section -->
+      <!-- Profile -->
       <div v-if="activeTab === 'profile'" class="content-card">
         <h3>Profile Information</h3>
         <form @submit.prevent="updateProfile">
@@ -50,7 +50,7 @@
         </form>
       </div>
 
-      <!-- Orders Section -->
+      <!-- Orders -->
       <div v-if="activeTab === 'orders'" class="content-card">
         <h3 class="mb-4">My Orders</h3>
         <div class="order-list">
@@ -63,14 +63,19 @@
                   {{ order.status }}
                 </span>
               </div>
+              <!-- Display order date
               <div class="order-date">
                 {{ order.date?.toDate().toLocaleString() }}
+              </div>
+              -->
+              <div class="order-date">
+                {{ new Date('2025-06-09').toLocaleDateString() }}
               </div>
             </div>
             <div class="order-items">
               <div v-for="item in order.items" :key="item.productId" class="order-item">
                 <div class="item-details">
-                  <span class="item-name">{{ item.productId }}</span>
+                  <span class="item-name">{{ productNames[item.productId] || 'Loading...' }}</span>
                   <span class="item-size">Size: {{ item.size || "N/A" }}</span>
                   <span class="item-quantity">Qty: {{ item.quantity }}</span>
                 </div>
@@ -83,9 +88,8 @@
         </div>
       </div>
 
-      
+      <!-- Address -->
       <div v-if="activeTab === 'addresses'" class="mt-4">
-
         <ul class="list-group mb-3">
           <li v-for="address in addresses" :key="address.id" class="list-group-item">
             {{ address.street }}, {{ address.buildingNumber }}, {{ address.city }}, {{ address.country }}, {{ address.postalCode }}
@@ -124,14 +128,10 @@
   </div>
 </template>
 
-
-
-
-
 <script>
 import { ref, onMounted } from "vue";
 import { useUserStore } from "@/store/user";
-import { getFirestore, collection, query, where, doc, getDoc, addDoc, updateDoc, deleteDoc, getDocs } from "firebase/firestore";
+import { getFirestore, collection, query, where, doc, getDoc, addDoc, updateDoc, deleteDoc, getDocs } from "@firebase/firestore";
 
 export default {
   setup() {
@@ -156,8 +156,6 @@ export default {
     });
 
     const isUpdating = ref(false);
-
-    // Fetch user data from Firestore
     const fetchUserData = async () => {
       try {
         const userDoc = await getDoc(doc(db, "users", userStore.userInfo.uid));
@@ -169,7 +167,6 @@ export default {
       }
     };
 
-    // Update user data in Firestore
     const updateProfile = async () => {
       isUpdating.value = true;
       try {
@@ -187,12 +184,8 @@ export default {
       }
     };
 
-    // Fetch user data on component mount
-    onMounted(fetchUserData);
-
     const orders = ref([]);
-
-    // Fetch user's orders from Firestore
+    const productNames = ref({});
     const fetchOrders = async () => {
       try {
         const ordersQuery = query(
@@ -200,30 +193,47 @@ export default {
           where("userId", "==", userStore.userInfo.uid)
         );
         const querySnapshot = await getDocs(ordersQuery);
-        orders.value = querySnapshot.docs.map((doc) => ({
+        const ordersData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
+
+        for (const order of ordersData) {
+          await fetchProductNames(order.items);
+        }
+        
+        orders.value = ordersData;
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
     };
 
-    // Fetch orders on component mount
-    onMounted(fetchOrders);
+     const fetchProductNames = async (orderItems) => {
+      const uniqueProductIds = [...new Set(orderItems.map(item => item.productId))];
+      
+      for (const productId of uniqueProductIds) {
+        try {
+          const productDoc = await getDoc(doc(db, "products", productId));
+          if (productDoc.exists()) {
+            productNames.value[productId] = productDoc.data().name;
+          }
+        } catch (error) {
+          console.error(`Error fetching product name for ID ${productId}:`, error);
+        }
+      }
+    };
 
     const addresses = ref([]);
     const newAddress = ref({
       street: "",
       buildingNumber: "",
       city: "",
-      country: "Lithuania", // Default country
+      country: "Lithuania",
       postalCode: "",
     });
     const isEditing = ref(false);
     const editingAddressId = ref(null);
 
-    // Fetch user's addresses from Firestore
     const fetchAddresses = async () => {
       try {
         const addressesQuery = query(
@@ -240,7 +250,6 @@ export default {
       }
     };
 
-    // Add a new address to Firestore
     const addAddress = async () => {
       if (addresses.value.length >= 3) {
         alert("You can only store up to 3 addresses.");
@@ -261,15 +270,11 @@ export default {
         alert("Failed to add address.");
       }
     };
-
-    // Edit an existing address
     const editAddress = (address) => {
       isEditing.value = true;
       editingAddressId.value = address.id;
       Object.assign(newAddress.value, address);
     };
-
-    // Update an address in Firestore
     const updateAddress = async () => {
       try {
         const addressRef = doc(db, "addresses", editingAddressId.value);
@@ -288,29 +293,24 @@ export default {
       }
     };
 
-    // Remove an address from Firestore
     const removeAddress = async (id) => {
-      try {
-        // Ensure the `id` is valid
-        if (!id) {
-          console.error("Invalid address ID:", id);
-          return;
-        }
-
-        // Remove the address from Firestore
-        await deleteDoc(doc(db, "addresses", id));
-        console.log("Address removed from Firestore:", id);
-        // Update the local `addresses` array to remove the deleted address
-        addresses.value = addresses.value.filter((addr) => addr.id !== id);
-
-        alert("Address removed successfully!");
-      } catch (error) {
-        console.error("Error removing address:", error);
-        alert("Failed to remove address.");
+    try {
+      if (!confirm('Are you sure you want to delete this address?')) {
+        return;
       }
-    };
 
-    // Reset the new address form
+      const addressRef = doc(db, "addresses", id);
+      await deleteDoc(addressRef);
+
+      addresses.value = addresses.value.filter((addr) => addr.id !== id);
+      alert("Address removed successfully!");
+
+    } catch (error) {
+      console.error("Error removing address:", error);
+      alert("Failed to remove address: " + error.message);
+    }
+  };
+
     const resetNewAddress = () => {
       newAddress.value = {
         street: "",
@@ -321,8 +321,18 @@ export default {
       };
     };
 
-    // Fetch addresses on component mount
-    onMounted(fetchAddresses);
+    onMounted(async () => {
+      try {
+        await Promise.all([
+          fetchUserData(),       
+          fetchOrders(),     
+          fetchAddresses()     
+        ]);
+        console.log('All data loaded successfully');
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    });
 
     return {
       activeTab,
@@ -337,17 +347,12 @@ export default {
       updateAddress,
       removeAddress,
       resetNewAddress,
-      getStatusClass
+      getStatusClass,
+      productNames,
     };
   },
 };
 </script>
-
-
-
-
-
-
 <style scoped>
 .page-container {
   position: relative;

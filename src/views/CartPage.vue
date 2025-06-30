@@ -3,7 +3,7 @@
     <div class="background-overlay"></div>
     <div class="container mt-5">
       <h1 class="text-center mb-4">Your Cart</h1>
-  
+      
       <div v-if="cart.length > 0">
         <div v-for="item in cart" :key="item.id" class="card mb-3 p-3">
           <div class="d-flex justify-content-between align-items-center">
@@ -31,7 +31,6 @@
             <button class="btn btn-danger" @click="removeFromCart(item.id, item.size)">Remove</button>
           </div>
         </div>
-  
         <div class="card p-3 mt-4">
           <h3 class="text-end mb-0">Total: €{{ totalPrice.toFixed(2) }}</h3>
         </div>
@@ -54,13 +53,20 @@ export default {
     const cartStore = useCartStore();
     const { cart, totalPrice } = storeToRefs(cartStore);
 
-    const getImageUrl = (path) => {
-      if (!path) return '/images/placeholder-image.jpg';
-      return path.startsWith('http') ? path : `/images/${path}`;
+    const getImageUrl = (imagePath) => {
+      if (!imagePath) return '/images/pr1.png';
+      try {
+        return `/images/${imagePath}`;
+      } catch {
+        return '/images/pr1.png';
+      }
     };
 
     const handleImageError = (e) => {
-      e.target.src = '/images/placeholder-image.jpg';
+      const fallbackImage = '/images/pr1.png';
+      if (e.target.src !== fallbackImage) {
+        e.target.src = fallbackImage;
+      }
     };
 
     return {

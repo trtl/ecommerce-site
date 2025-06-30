@@ -12,42 +12,116 @@
       </ul>
       <h4 class="text-end">Total: €{{ totalPrice.toFixed(2) }}</h4>
     </div>
-
-    <!-- Buyer Information Form -->
+    <!-- Info form -->
     <div class="card p-4 mt-4">
       <h3>Buyer Information</h3>
       <form @submit.prevent="handleSubmit">
         <div class="mb-3">
           <label for="name" class="form-label">Name</label>
-          <input type="text" id="name" v-model="buyerInfo.name" class="form-control" required />
+          <input 
+            type="text" 
+            id="name" 
+            v-model="buyerInfo.name" 
+            class="form-control"
+            :class="{ 'is-invalid': errors.name }"
+            @blur="handleBlur('name')"
+            required 
+          />
+          <div class="invalid-feedback" v-if="errors.name">{{ errors.name }}</div>
         </div>
+
         <div class="mb-3">
           <label for="surname" class="form-label">Surname</label>
-          <input type="text" id="surname" v-model="buyerInfo.surname" class="form-control" required />
+          <input 
+            type="text" 
+            id="surname" 
+            v-model="buyerInfo.surname" 
+            class="form-control"
+            :class="{ 'is-invalid': errors.surname }"
+            @blur="handleBlur('surname')"
+            required 
+          />
+          <div class="invalid-feedback" v-if="errors.surname">{{ errors.surname }}</div>
         </div>
+
         <div class="mb-3">
           <label for="email" class="form-label">Email</label>
-          <input type="email" id="email" v-model="buyerInfo.email" class="form-control" required />
+          <input 
+            type="email" 
+            id="email" 
+            v-model="buyerInfo.email" 
+            class="form-control"
+            :class="{ 'is-invalid': errors.email }"
+            @blur="handleBlur('email')"
+            required 
+          />
+          <div class="invalid-feedback" v-if="errors.email">{{ errors.email }}</div>
         </div>
+
         <div class="mb-3">
           <label for="phone" class="form-label">Phone Number</label>
-          <input type="tel" id="phone" v-model="buyerInfo.phone" class="form-control" required />
+          <input 
+            type="tel" 
+            id="phone" 
+            v-model="buyerInfo.phone" 
+            class="form-control"
+            :class="{ 'is-invalid': errors.phone }"
+            @blur="handleBlur('phone')"
+            required 
+          />
+          <div class="invalid-feedback" v-if="errors.phone">{{ errors.phone }}</div>
         </div>
+
         <div class="mb-3">
           <label for="address" class="form-label">Address</label>
-          <textarea id="address" v-model="buyerInfo.address" class="form-control" rows="3" required></textarea>
+          <textarea 
+            id="address" 
+            v-model="buyerInfo.address" 
+            class="form-control"
+            :class="{ 'is-invalid': errors.address }"
+            @blur="handleBlur('address')"
+            rows="3" 
+            required
+          ></textarea>
+          <div class="invalid-feedback" v-if="errors.address">{{ errors.address }}</div>
         </div>
+
         <div class="mb-3">
           <label for="city" class="form-label">City</label>
-          <input type="text" id="city" v-model="buyerInfo.city" class="form-control" required />
+          <input 
+            type="text" 
+            id="city" 
+            v-model="buyerInfo.city" 
+            class="form-control"
+            :class="{ 'is-invalid': errors.city }"
+            @blur="handleBlur('city')"
+            required 
+          />
+          <div class="invalid-feedback" v-if="errors.city">{{ errors.city }}</div>
         </div>
+
         <div class="mb-3">
           <label for="postalCode" class="form-label">Postal Code</label>
-          <input type="text" id="postalCode" v-model="buyerInfo.postalCode" class="form-control" required />
+          <input 
+            type="text" 
+            id="postalCode" 
+            v-model="buyerInfo.postalCode" 
+            class="form-control"
+            :class="{ 'is-invalid': errors.postalCode }"
+            @blur="handleBlur('postalCode')"
+            required 
+          />
+          <div class="invalid-feedback" v-if="errors.postalCode">{{ errors.postalCode }}</div>
         </div>
+
         <div class="mb-3">
           <label for="country" class="form-label">Country</label>
-          <select id="country" v-model="buyerInfo.country" class="form-select" required>
+          <select 
+            id="country" 
+            v-model="buyerInfo.country" 
+            class="form-select" 
+            required
+          >
             <option value="Lithuania">Lithuania</option>
             <option value="Latvia">Latvia</option>
           </select>
@@ -55,24 +129,23 @@
       </form>
     </div>
 
-    <button class="btn btn-primary w-100 mt-4" @click="redirectToPaysera">
+    <button 
+      class="btn btn-primary w-100 mt-4" 
+      @click="redirectToPaysera"
+      :disabled="Object.keys(errors).length > 0"
+    >
       Proceed to Paysera
     </button>
   </div>
 </template>
 
 <script>
+import { ref, reactive } from 'vue';
 import { useCartStore } from "@/store/cart";
-import { storeToRefs } from "pinia";
 import { useUserStore } from "@/store/user";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  serverTimestamp,
-  doc,
-  runTransaction
-} from "firebase/firestore";
+import { storeToRefs } from "pinia";
+import { getFirestore, collection, addDoc, serverTimestamp, doc, runTransaction } from "firebase/firestore";
+import { validateForm, validateField } from "@/utility/inputRules";
 
 export default {
   setup() {
@@ -80,8 +153,9 @@ export default {
     const { cart, totalPrice } = storeToRefs(cartStore);
     const userStore = useUserStore();
     const db = getFirestore();
+    const errors = ref({});
 
-    const buyerInfo = {
+    const buyerInfo = reactive({
       name: "",
       surname: "",
       email: "",
@@ -90,6 +164,22 @@ export default {
       city: "",
       postalCode: "",
       country: "Lithuania",
+    });
+
+    const handleBlur = (field) => {
+      const result = validateField(field, buyerInfo[field]);
+      if (!result.isValid) {
+        errors.value[field] = result.message;
+      } else {
+        delete errors.value[field];
+      }
+    };
+
+    const validateAllFields = () => {
+      const fields = ['name', 'surname', 'email', 'phone', 'address', 'city', 'postalCode'];
+      const { isValid, errors: validationErrors } = validateForm(buyerInfo, fields);
+      errors.value = validationErrors;
+      return isValid;
     };
 
     const redirectToPaysera = async () => {
@@ -160,12 +250,14 @@ export default {
       }
     };
 
-
     return {
       cart,
       totalPrice,
       buyerInfo,
       redirectToPaysera,
+      handleBlur,
+      errors,
+      validateAllFields
     };
   },
 };
@@ -175,4 +267,5 @@ export default {
 .container {
   max-width: 600px;
 }
+
 </style>

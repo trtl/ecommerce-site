@@ -41,9 +41,8 @@
 
 <script>
 import { ref } from "vue";
-import { createUserWithEmailAndPassword } from "@/firebase/firebaseConfig.js";
-import { auth, db } from "@/firebase/firebaseConfig.js"; // Import Firestore
-import { doc, setDoc } from "firebase/firestore"; // Firestore functions
+import { createUserWithEmailAndPassword, auth, db } from "@/firebase/firebaseConfig.js";
+import { doc, setDoc } from "firebase/firestore";
 import { useRouter } from "vue-router";
 
 export default {
@@ -74,21 +73,19 @@ export default {
       }
 
       try {
-        // Create user with Firebase Authentication
         const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
         const user = userCredential.user;
 
-        // Save user info to Firestore
         await setDoc(doc(db, "users", user.uid), {
           firstName: firstName.value,
           lastName: lastName.value,
           email: email.value,
-          phone: phone.value || null, // Optional phone field
+          phone: phone.value || null,
         });
 
         console.log("User signed up and data saved to Firestore:", user);
         alert("Signup successful!");
-        router.push("/profile"); // Redirect to Profile Page after successful signup
+        router.push("/profile");
       } catch (error) {
         console.error("Error signing up:", error.message);
         alert("Error signing up: " + error.message);
@@ -111,7 +108,6 @@ export default {
 </script>
 
 <style scoped>
-
 .signup-container {
   max-width: 400px;
   margin: 0 auto;
@@ -152,5 +148,4 @@ export default {
   opacity: 1;
   z-index: -1;
 }
-
 </style>
